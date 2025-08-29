@@ -1,0 +1,278 @@
+{% extends 'newsletter/base.html' %}
+
+{% block title %}Send Newsletter - Newsletter Admin{% endblock %}
+{% block page_title %}Send Newsletter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Newsletter Preview -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-eye me-2"></i>Newsletter Preview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="newsletter-preview border p-4 rounded">
+                    <h2 class="text-primary mb-3">{{ newsletter.title }}</h2>
+                    <div class="newsletter-content">
+                        {{ newsletter.description|linebreaks }}
+                    </div>
+                    <hr>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        Created: {{ newsletter.created_at|date:"M d, Y H:i" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Send Status -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-paper-plane me-2"></i>Send Newsletter
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="sending-status" class="d-none">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="spinner-border spinner-border-sm text-primary me-3" role="status"></div>
+                        <span>Sending newsletter to {{ total_recipients }} recipients...</span>
+                    </div>
+                    <div class="progress mb-3">
+                        <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div id="send-log" class="alert alert-info">
+                        <div class="mb-2">
+                            <i class="fas fa-info-circle me-2"></i>Starting email delivery...
+                        </div>
+                    </div>
+                </div>
+
+                <div id="send-success" class="d-none">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Newsletter sent successfully to {{ total_recipients }} recipients!
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'newsletter:dashboard' %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <div id="send-controls">
+                    <button id="send-btn" class="btn btn-success btn-lg">
+                        <i class="fas fa-paper-plane me-2"></i>Send to {{ total_recipients }} Recipients
+                    </button>
+                    <a href="{% url 'newsletter:dashboard' %}" class="btn btn-secondary ms-2">
+                        <i class="fas fa-arrow-left me-2"></i>Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Recipients List -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-users me-2"></i>Recipients ({{ total_recipients }})
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if user_emails %}
+                    <div class="recipient-list" style="max-height: 400px; overflow-y: auto;">
+                        {% for user_email in user_emails %}
+                            <div class="recipient-item d-flex align-items-center mb-2 p-2 border rounded">
+                                <div class="recipient-status me-2">
+                                    <i class="fas fa-clock text-muted" id="status-{{ forloop.counter0 }}"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">{{ user_email.name }}</div>
+                                    <small class="text-muted">{{ user_email.email }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <h6 class="text-warning">No Recipients Found</h6>
+                        <p class="text-muted">There are no users with email addresses to send the newsletter to.</p>
+                        <a href="{% url 'newsletter:add_user' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-user-plus me-1"></i>Add Users
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Email Settings -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Email Settings
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">EmailJS Service ID</label>
+                    <input type="text" id="emailjs-service" class="form-control" placeholder="your_service_id">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">EmailJS Template ID</label>
+                    <input type="text" id="emailjs-template" class="form-control" placeholder="your_template_id">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">EmailJS Public Key</label>
+                    <input type="text" id="emailjs-public-key" class="form-control" placeholder="your_public_key">
+                </div>
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Configure your EmailJS settings to send newsletters.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// EmailJS Configuration
+let emailjsConfig = {
+    serviceId: '',
+    templateId: '',
+    publicKey: ''
+};
+
+// Newsletter and recipients data
+const newsletter = {
+    id: {{ newsletter.id }},
+    title: "{{ newsletter.title|escapejs }}",
+    description: "{{ newsletter.description|escapejs }}"
+};
+
+const recipients = [
+    {% for user_email in user_emails %}
+    {
+        name: "{{ user_email.name|escapejs }}",
+        email: "{{ user_email.email|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize form values (you can set default values here)
+    document.getElementById('emailjs-service').value = emailjsConfig.serviceId;
+    document.getElementById('emailjs-template').value = emailjsConfig.templateId;
+    document.getElementById('emailjs-public-key').value = emailjsConfig.publicKey;
+
+    // Update configuration on change
+    document.getElementById('emailjs-service').addEventListener('change', function() {
+        emailjsConfig.serviceId = this.value;
+    });
+
+    document.getElementById('emailjs-template').addEventListener('change', function() {
+        emailjsConfig.templateId = this.value;
+    });
+
+    document.getElementById('emailjs-public-key').addEventListener('change', function() {
+        emailjsConfig.publicKey = this.value;
+    });
+
+    // Send button event
+    document.getElementById('send-btn').addEventListener('click', sendNewsletter);
+});
+
+async function sendNewsletter() {
+    // Validate EmailJS configuration
+    if (!emailjsConfig.serviceId || !emailjsConfig.templateId || !emailjsConfig.publicKey) {
+        alert('Please configure your EmailJS settings first!');
+        return;
+    }
+
+    // Initialize EmailJS
+    emailjs.init(emailjsConfig.publicKey);
+
+    // Show sending status
+    document.getElementById('send-controls').classList.add('d-none');
+    document.getElementById('sending-status').classList.remove('d-none');
+
+    let sentCount = 0;
+    const totalRecipients = recipients.length;
+
+    try {
+        for (let i = 0; i < recipients.length; i++) {
+            const recipient = recipients[i];
+            
+            // Update progress
+            const progress = Math.round(((i + 1) / totalRecipients) * 100);
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-bar').textContent = progress + '%';
+
+            // Update recipient status
+            const statusIcon = document.getElementById(`status-${i}`);
+            statusIcon.className = 'fas fa-spinner fa-spin text-primary';
+
+            // Update log
+            const logDiv = document.getElementById('send-log');
+            logDiv.innerHTML += `<div>Sending to ${recipient.name} (${recipient.email})...</div>`;
+
+            try {
+                // Send email via EmailJS
+                await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
+                    to_name: recipient.name,
+                    to_email: recipient.email,
+                    newsletter_title: newsletter.title,
+                    newsletter_content: newsletter.description,
+                    from_name: 'Newsletter Admin'
+                });
+
+                // Update success status
+                statusIcon.className = 'fas fa-check-circle text-success';
+                sentCount++;
+
+            } catch (error) {
+                console.error('Error sending to', recipient.email, error);
+                statusIcon.className = 'fas fa-exclamation-circle text-danger';
+                logDiv.innerHTML += `<div class="text-danger">Failed to send to ${recipient.email}</div>`;
+            }
+
+            // Small delay between sends
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        // Show success
+        document.getElementById('sending-status').classList.add('d-none');
+        document.getElementById('send-success').classList.remove('d-none');
+
+        // Notify backend of successful send
+        fetch("{% url 'newsletter:newsletter_sent_callback' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                newsletter_id: newsletter.id,
+                sent_count: sentCount,
+                total_recipients: totalRecipients
+            })
+        });
+
+    } catch (error) {
+        console.error('Error during newsletter sending:', error);
+        alert('An error occurred while sending the newsletter. Please try again.');
+        
+        // Show controls again
+        document.getElementById('sending-status').classList.add('d-none');
+        document.getElementById('send-controls').classList.remove('d-none');
+    }
+}
+</script>
+{% endblock %}
