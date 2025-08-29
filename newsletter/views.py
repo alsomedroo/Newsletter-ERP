@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.conf import settings
 import json
 from .models import NewsletterUser, Newsletter
 from .forms import UserCreationForm, NewsletterForm
@@ -60,7 +61,10 @@ def send_newsletter(request):
             context = {
                 'newsletter': newsletter,
                 'user_emails': user_emails,
-                'total_recipients': len(user_emails)
+                'total_recipients': len(user_emails),
+                'emailjs_service_id': settings.EMAILJS_SERVICE_ID,
+                'emailjs_template_id': settings.EMAILJS_TEMPLATE_ID,
+                'emailjs_public_key': settings.EMAILJS_PUBLIC_KEY,
             }
             return render(request, 'newsletter/send_newsletter.html', context)
         else:

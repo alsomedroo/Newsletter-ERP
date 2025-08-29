@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-your-secret-key-here'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -100,3 +101,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/newsletter/'
 LOGOUT_REDIRECT_URL = '/admin/login/'
+
+EMAILJS_SERVICE_ID = config('EMAILJS_SERVICE_ID', default='your_service_id_here')
+EMAILJS_TEMPLATE_ID = config('EMAILJS_TEMPLATE_ID', default='your_template_id_here')
+EMAILJS_PUBLIC_KEY = config('EMAILJS_PUBLIC_KEY', default='your_public_key_here')
