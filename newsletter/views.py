@@ -22,6 +22,7 @@ def dashboard(request):
         'users': users,
         'newsletters': newsletters,
         'total_users': users.count(),
+        'total_newsletters': Newsletter.objects.count(),
     }
     return render(request, 'newsletter/dashboard.html', context)
 

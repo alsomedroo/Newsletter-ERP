@@ -4,9 +4,104 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
+<style>
+/* 🌌 Dark Animated Gradient Background */
+body {
+    background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1b2735);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease infinite;
+    color: #f0f0f0;
+}
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ✨ Glassmorphic Cards */
+.card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+}
+
+/* 🌟 Bubbly Buttons */
+.btn {
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+.btn::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 10%, transparent 10.01%);
+    background-size: 20px 20px;
+    animation: bubble 3s linear infinite;
+    opacity: 0.4;
+}
+@keyframes bubble {
+    from { transform: translate(0,0); }
+    to { transform: translate(50px, 50px); }
+}
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255,255,255,0.3);
+}
+
+/* ⚡ Table Styling */
+.table {
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    overflow: hidden;
+    color: #fff; /* Force all table text white */
+}
+.table th {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+.table td {
+    color: #fff !important; /* Fix black text issue */
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(255,255,255,0.04);
+}
+.table-striped tbody tr:nth-of-type(even) {
+    background: rgba(255,255,255,0.08);
+}
+.table-hover tbody tr:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* 🛑 Modal Styling */
+.modal-content {
+    background: rgba(20,20,30,0.95);
+    color: #fff;
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+</style>
+
+<!-- (rest of your HTML remains EXACTLY the same) -->
+
+
 <!-- Stats Cards -->
 <div class="row mb-4">
-    <div class="col-md-4">
+    <div class="col-md-4 mb-3">
         <div class="card text-center p-4">
             <div class="card-body">
                 <i class="fas fa-users fa-3x text-primary mb-3"></i>
@@ -15,16 +110,16 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4 mb-3">
         <div class="card text-center p-4">
             <div class="card-body">
                 <i class="fas fa-newspaper fa-3x text-success mb-3"></i>
-                <h3 class="text-success">{{ newsletters.count }}</h3>
+                <h3 class="text-success">{{ total_newsletters }}</h3>
                 <p class="text-muted">Newsletters Sent</p>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4 mb-3">
         <div class="card text-center p-4">
             <div class="card-body">
                 <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
@@ -38,9 +133,7 @@
 <!-- Users Management -->
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-            <i class="fas fa-users me-2"></i>Users Management
-        </h5>
+        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Users Management</h5>
         <a href="{% url 'newsletter:add_user' %}" class="btn btn-success">
             <i class="fas fa-plus me-2"></i>Add User
         </a>
@@ -107,9 +200,7 @@
 <!-- Recent Newsletters -->
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-            <i class="fas fa-newspaper me-2"></i>Recent Newsletters
-        </h5>
+        <h5 class="mb-0"><i class="fas fa-newspaper me-2"></i>Recent Newsletters</h5>
         <a href="{% url 'newsletter:send_newsletter' %}" class="btn btn-primary">
             <i class="fas fa-paper-plane me-2"></i>Send Newsletter
         </a>
@@ -118,22 +209,18 @@
         {% if newsletters %}
             <div class="list-group list-group-flush">
                 {% for newsletter in newsletters %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent text-light">
                         <div>
                             <h6 class="mb-1">{{ newsletter.title }}</h6>
                             <p class="mb-1 text-muted">{{ newsletter.description|truncatewords:10 }}</p>
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>{{ newsletter.sent_at|date:"M d, Y H:i" }}
-                            </small>
+                            <small class="text-muted"><i class="fas fa-calendar me-1"></i>{{ newsletter.sent_at|date:"M d, Y H:i" }}</small>
                         </div>
                         <span class="badge bg-success">Sent</span>
                     </div>
                 {% endfor %}
             </div>
             <div class="text-center mt-3">
-                <a href="{% url 'newsletter:history' %}" class="btn btn-outline-primary">
-                    View All Newsletters
-                </a>
+                <a href="{% url 'newsletter:history' %}" class="btn btn-outline-primary">View All Newsletters</a>
             </div>
         {% else %}
             <div class="text-center py-4">

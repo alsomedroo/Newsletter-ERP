@@ -1,138 +1,409 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Newsletter Admin{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .sidebar {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .sidebar .nav-link {
-            color: white !important;
-            border-radius: 8px;
-            margin: 5px 0;
-            padding: 12px 20px;
-            transition: all 0.3s ease;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: translateX(5px);
-        }
-        .main-content {
-            background-color: #f8f9fa;
-            min-height: 100vh;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border: none;
-            border-radius: 8px;
-        }
-        .btn-success {
-            background: linear-gradient(45deg, #11998e, #38ef7d);
-            border: none;
-            border-radius: 8px;
-        }
-        .btn-danger {
-            background: linear-gradient(45deg, #ee5a52, #f093fb);
-            border: none;
-            border-radius: 8px;
-        }
-        .table th {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-        }
-        .navbar-brand {
-            font-weight: bold;
-            color: #667eea !important;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Newsletter Admin{% endblock %}</title>
+
+  <!-- Bootstrap + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  
+
+
+  <style>
+    :root{
+      --bg: #0b0b10;
+      --panel: rgba(22,22,33,0.78);
+      --panel-solid:#161621;
+      --text:#e8eaf1;
+      --muted:#a1a7b3;
+      --primary-1:#6d7cff;
+      --primary-2:#9b5cff;
+      --success-1:#1ec997;
+      --success-2:#49f3c7;
+      --danger-1:#ff6a6a;
+      --danger-2:#ff9bd5;
+      --warning:#ffc861;
+      --card-border:#2a2f3a;
+      --shadow: 0 10px 40px rgba(0,0,0,0.45);
+      --radius-xl: 20px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --speed: .45s;
+    }
+
+    /* Global Dark */
+    html,body{
+      height:100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Live animated gradient behind everything */
+    .bg-animated{
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(1200px 1200px at -10% -10%, rgba(157,108,255,0.15), transparent 60%),
+        radial-gradient(1000px 1000px at 110% 10%, rgba(109,124,255,0.12), transparent 55%),
+        radial-gradient(900px 900px at 50% 120%, rgba(30,201,151,0.12), transparent 60%),
+        linear-gradient(180deg, #0b0b10 0%, #0b0b10 100%);
+      overflow: hidden;
+    }
+    /* Floating blur bubbles */
+    .bg-animated::before,
+    .bg-animated::after{
+      content:"";
+      position:absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity:.35;
+      animation: floaty 24s ease-in-out infinite;
+      pointer-events:none;
+    }
+    .bg-animated::before{
+      left:-10%;
+      top:10%;
+      background: radial-gradient(circle at 30% 30%, var(--primary-2), transparent 60%);
+    }
+    .bg-animated::after{
+      right:-12%;
+      bottom:-8%;
+      background: radial-gradient(circle at 60% 60%, var(--success-1), transparent 60%);
+      animation-delay: 6s;
+    }
+    @keyframes floaty{
+      0%,100%{ transform: translate3d(0,0,0) scale(1);}
+      50%{ transform: translate3d(0,-25px,0) scale(1.05);}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .bg-animated, .bg-animated::before, .bg-animated::after{ animation: none; }
+    }
+
+    /* Layout */
+    .container-fluid{ position: relative; z-index: 1; }
+    .sidebar{
+      min-height: 100vh;
+      background: linear-gradient(160deg, rgba(29,29,45,0.92) 0%, rgba(21,21,34,0.92) 90%);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(6px);
+      position: sticky;
+      top:0;
+    }
+    .main-content{
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    /* Sidebar header */
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      color:#fff;
+      font-weight: 700;
+      letter-spacing:.3px;
+    }
+    .brand i{
+      color: var(--primary-2);
+      filter: drop-shadow(0 0 10px rgba(155,92,255,.25));
+    }
+
+    /* Nav links – bubbly hover */
+    .sidebar .nav-link{
+      color: var(--text) !important;
+      opacity:.85;
+      border-radius: var(--radius-md);
+      margin: 6px 0;
+      padding: .75rem 1rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--speed), opacity .2s, background-color .2s;
+    }
+    .sidebar .nav-link:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(120px 120px at var(--mx,20%) var(--my,50%), rgba(109,124,255,.18), transparent 60%);
+      transition: opacity .25s;
+      opacity:0;
+    }
+    .sidebar .nav-link:hover{ transform: translateX(6px); opacity:1; background: rgba(255,255,255,0.04); }
+    .sidebar .nav-link:hover::before{ opacity:1; }
+    .sidebar .nav-link.active{
+      background: linear-gradient(90deg, rgba(109,124,255,.18), rgba(155,92,255,.18));
+      border: 1px solid rgba(149,114,252,0.25);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    /* Top Navbar */
+    .navbar{
+      background: rgba(22,22,33,0.7) !important;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+    }
+    .navbar .navbar-brand{
+      color:#fff !important;
+      font-weight: 700;
+    }
+    .navbar .nav-link{
+      color: var(--muted) !important;
+    }
+
+    /* Glassy Cards with bubbly accents */
+    .card{
+      background: var(--panel);
+      color: var(--text);
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--speed), box-shadow var(--speed), border-color var(--speed);
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: inherit;
+      padding:1px;
+      background: linear-gradient(140deg, rgba(109,124,255,.35), rgba(155,92,255,.15), rgba(30,201,151,.18));
+      -webkit-mask: 
+        linear-gradient(#000 0 0) content-box, 
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      pointer-events:none;
+    }
+    .card::after{
+      content:"";
+      position:absolute;
+      width:160px;height:160px;
+      background: radial-gradient(circle at 30% 30%, rgba(109,124,255,.25), transparent 60%);
+      filter: blur(30px);
+      top:-40px; right:-30px;
+      opacity:.45;
+      transition: transform var(--speed), opacity var(--speed);
+      pointer-events:none;
+    }
+    .card:hover{ transform: translateY(-6px); border-color: rgba(149,114,252,0.35); }
+    .card:hover::after{ transform: translate(-8px,8px) scale(1.03); opacity:.65; }
+
+    .card-header{
+      background: transparent;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 1rem 1.25rem;
+    }
+
+    /* Bubbly Buttons */
+    .btn{
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+      overflow: hidden;
+      transition: transform .15s ease, box-shadow .25s ease, background-position .25s ease;
+      will-change: transform;
+    }
+    .btn:focus{ box-shadow: 0 0 0 3px rgba(109,124,255,.35) !important; }
+
+    .btn-primary{
+      color:#fff;
+      background-image: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+      background-size: 140% 140%;
+    }
+    .btn-primary:hover{ transform: translateY(-1px); background-position: 100% 0; }
+
+    .btn-success{
+      color:#0a0f12;
+      background-image: linear-gradient(135deg, var(--success-1), var(--success-2));
+      background-size: 140% 140%;
+      color:#061b15;
+    }
+    .btn-success:hover{ transform: translateY(-1px); background-position: 100% 0; }
+
+    .btn-danger{
+      color:#fff;
+      background-image: linear-gradient(135deg, var(--danger-1), var(--danger-2));
+      background-size: 140% 140%;
+    }
+    .btn-danger:hover{ transform: translateY(-1px); background-position: 100% 0; }
+
+    .btn-outline-primary{
+      border-color: rgba(149,114,252,0.35);
+      color: var(--text);
+    }
+    .btn-outline-primary:hover{
+      background: rgba(149,114,252,0.15);
+      border-color: rgba(149,114,252,0.6);
+      color:#fff;
+    }
+
+    /* Button ripple bubble */
+    .btn.bubbly:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(120px 120px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.22), transparent 60%);
+      opacity:0;
+      transition: opacity .3s ease;
+      pointer-events:none;
+    }
+    .btn.bubbly:active:after{ opacity:.9; transition: opacity .05s ease; }
+
+    /* Forms */
+    label{ color:#cfd3dd; }
+    .form-control, .form-select, textarea{
+      background:#12121a;
+      border:1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      border-radius: var(--radius-md);
+    }
+    .form-control:focus, .form-select:focus, textarea:focus{
+      background:#151521;
+      border-color: rgba(149,114,252,0.5);
+      box-shadow: 0 0 0 3px rgba(149,114,252,0.25);
+      color: var(--text);
+    }
+    .form-text, .text-muted{ color: var(--muted) !important; }
+
+    /* Tables */
+    .table{
+      color: var(--text);
+      --bs-table-striped-bg: rgba(255,255,255,0.02);
+      --bs-table-hover-bg: rgba(255,255,255,0.04);
+    }
+    .table thead th{
+      background: linear-gradient(90deg, rgba(109,124,255,.16), rgba(155,92,255,.16));
+      color:#fff;
+      border:0;
+    }
+    .table td, .table th{
+      border-color: rgba(255,255,255,0.06) !important;
+    }
+
+    /* Alerts */
+    .alert{
+      border-radius: var(--radius-md);
+      border:1px solid rgba(255,255,255,0.08);
+      background: rgba(22,22,33,.85);
+      color: var(--text);
+    }
+
+    /* Utility: subtle separators */
+    hr{ border-color: rgba(255,255,255,0.06); }
+
+    /* Responsive tweaks */
+    @media (max-width: 991.98px){
+      .main-content{ padding: 1.25rem; }
+      .sidebar{ min-height: auto; position: static; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar p-3">
-                <h4 class="text-white mb-4">
-                    <i class="fas fa-newspaper me-2"></i>Newsletter Admin
-                </h4>
-                <nav class="nav flex-column">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
-                       href="{% url 'newsletter:dashboard' %}">
-                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                    </a>
-                    <a class="nav-link {% if request.resolver_match.url_name == 'add_user' %}active{% endif %}" 
-                       href="{% url 'newsletter:add_user' %}">
-                        <i class="fas fa-user-plus me-2"></i>Add User
-                    </a>
-                    <a class="nav-link {% if request.resolver_match.url_name == 'send_newsletter' %}active{% endif %}" 
-                       href="{% url 'newsletter:send_newsletter' %}">
-                        <i class="fas fa-paper-plane me-2"></i>Send Newsletter
-                    </a>
-                    <a class="nav-link {% if request.resolver_match.url_name == 'history' %}active{% endif %}" 
-                       href="{% url 'newsletter:history' %}">
-                        <i class="fas fa-history me-2"></i>History
-                    </a>
-                    <hr class="text-white">
-                    <a class="nav-link" href="/admin/logout/">
-                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                    </a>
-                </nav>
-            </div>
+  <!-- Live background -->
+  <div class="bg-animated" aria-hidden="true"></div>
 
-            <!-- Main Content -->
-            <div class="col-md-10 main-content p-4">
-                <!-- Top Bar -->
-                <div class="row mb-4">
-                    <div class="col">
-                        <nav class="navbar navbar-expand-lg navbar-light bg-white rounded shadow-sm">
-                            <div class="container-fluid">
-                                <span class="navbar-brand mb-0 h1">
-                                    {% block page_title %}Newsletter Dashboard{% endblock %}
-                                </span>
-                                <div class="navbar-nav ms-auto">
-                                    <span class="nav-link">
-                                        <i class="fas fa-user-circle me-2"></i>{{ user.get_full_name|default:user.username }}
-                                    </span>
-                                </div>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-
-                <!-- Messages -->
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-                <!-- Page Content -->
-                {% block content %}
-                {% endblock %}
-            </div>
+  <div class="container-fluid">
+    <div class="row g-0">
+      <!-- Sidebar -->
+      <div class="col-lg-2 col-md-3 sidebar p-3">
+        <div class="brand mb-4">
+          <i class="fas fa-newspaper"></i>
+          <span>Newsletter Admin</span>
         </div>
-    </div>
+        <nav class="nav flex-column">
+          <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+             href="{% url 'newsletter:dashboard' %}">
+            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+          </a>
+          <a class="nav-link {% if request.resolver_match.url_name == 'add_user' %}active{% endif %}"
+             href="{% url 'newsletter:add_user' %}">
+            <i class="fas fa-user-plus me-2"></i>Add User
+          </a>
+          <a class="nav-link {% if request.resolver_match.url_name == 'send_newsletter' %}active{% endif %}"
+             href="{% url 'newsletter:send_newsletter' %}">
+            <i class="fas fa-paper-plane me-2"></i>Send Newsletter
+          </a>
+          <a class="nav-link {% if request.resolver_match.url_name == 'history' %}active{% endif %}"
+             href="{% url 'newsletter:history' %}">
+            <i class="fas fa-history me-2"></i>History
+          </a>
+          <hr/>
+          <a class="nav-link" href="/admin/logout/">
+            <i class="fas fa-sign-out-alt me-2"></i>Logout
+          </a>
+        </nav>
+      </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    {% block scripts %}
-    {% endblock %}
+      <!-- Main Content -->
+      <div class="col-lg-10 col-md-9 main-content">
+        <!-- Top Navbar -->
+        <div class="row mb-4">
+          <div class="col">
+            <nav class="navbar navbar-expand-lg px-3">
+              <div class="container-fluid px-0">
+                <span class="navbar-brand mb-0 h1">
+                  {% block page_title %}Newsletter Dashboard{% endblock %}
+                </span>
+                <div class="navbar-nav ms-auto">
+                  <span class="nav-link">
+                    <i class="fas fa-user-circle me-2"></i>{{ user.get_full_name|default:user.username }}
+                  </span>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  {% block scripts %}{% endblock %}
+
+  <script>
+    /* Sidebar hover spotlight follows cursor */
+    document.querySelectorAll('.sidebar .nav-link').forEach(link=>{
+      link.addEventListener('mousemove', e=>{
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--mx', ((e.clientX - rect.left)/rect.width)*100 + '%');
+        e.currentTarget.style.setProperty('--my', ((e.clientY - rect.top)/rect.height)*100 + '%');
+      });
+    });
+
+    /* Make all .btn get bubbly ripple without changing your button code */
+    document.querySelectorAll('.btn').forEach(btn=>{
+      btn.classList.add('bubbly');
+      btn.addEventListener('pointerdown', e=>{
+        const rect = btn.getBoundingClientRect();
+        btn.style.setProperty('--mx', ((e.clientX - rect.left)/rect.width)*100 + '%');
+        btn.style.setProperty('--my', ((e.clientY - rect.top)/rect.height)*100 + '%');
+      }, {passive:true});
+    });
+  </script>
 </body>
 </html>

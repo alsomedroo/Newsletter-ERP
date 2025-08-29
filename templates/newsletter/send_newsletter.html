@@ -112,29 +112,29 @@
             </div>
         </div>
 
-        <!-- Email Status Info -->
+        <!-- Email Settings -->
         <div class="card mt-3">
             <div class="card-header">
                 <h6 class="mb-0">
-                    <i class="fas fa-info-circle me-2"></i>Email Service Status
+                    <i class="fas fa-cog me-2"></i>Email Settings
                 </h6>
             </div>
             <div class="card-body">
-                <div class="mb-2">
-                    <small class="text-muted">Service:</small>
-                    <div class="fw-bold text-success">
-                        <i class="fas fa-check-circle me-1"></i>EmailJS Configured
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">EmailJS Service ID</label>
+                    <input type="text" id="emailjs-service" class="form-control" placeholder="your_service_id">
                 </div>
-                <div class="mb-2">
-                    <small class="text-muted">Template:</small>
-                    <div class="fw-bold text-success">
-                        <i class="fas fa-check-circle me-1"></i>Newsletter Template
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">EmailJS Template ID</label>
+                    <input type="text" id="emailjs-template" class="form-control" placeholder="your_template_id">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">EmailJS Public Key</label>
+                    <input type="text" id="emailjs-public-key" class="form-control" placeholder="your_public_key">
                 </div>
                 <small class="text-muted">
-                    <i class="fas fa-shield-alt me-1"></i>
-                    Credentials are securely stored on the server.
+                    <i class="fas fa-info-circle me-1"></i>
+                    Configure your EmailJS settings to send newsletters.
                 </small>
             </div>
         </div>
@@ -144,11 +144,11 @@
 
 {% block scripts %}
 <script>
-// EmailJS Configuration from server
-const emailjsConfig = {
-    serviceId: '{{ emailjs_service_id }}',
-    templateId: '{{ emailjs_template_id }}',
-    publicKey: '{{ emailjs_public_key }}'
+// EmailJS Configuration
+let emailjsConfig = {
+    serviceId: 'service_ig4dzov',
+    templateId: 'template_s0g62jm',
+    publicKey: 'JkI_-2F_0FFdh9h7n'
 };
 
 // Newsletter and recipients data
@@ -168,14 +168,23 @@ const recipients = [
 ];
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Validate EmailJS configuration
-    if (!emailjsConfig.serviceId || !emailjsConfig.templateId || !emailjsConfig.publicKey) {
-        console.warn('EmailJS credentials not configured properly');
-        document.getElementById('send-btn').innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>EmailJS Not Configured';
-        document.getElementById('send-btn').disabled = true;
-        document.getElementById('send-btn').classList.add('btn-warning');
-        document.getElementById('send-btn').classList.remove('btn-success');
-    }
+    // Initialize form values (you can set default values here)
+    document.getElementById('emailjs-service').value = emailjsConfig.serviceId;
+    document.getElementById('emailjs-template').value = emailjsConfig.templateId;
+    document.getElementById('emailjs-public-key').value = emailjsConfig.publicKey;
+
+    // Update configuration on change
+    document.getElementById('emailjs-service').addEventListener('change', function() {
+        emailjsConfig.serviceId = this.value;
+    });
+
+    document.getElementById('emailjs-template').addEventListener('change', function() {
+        emailjsConfig.templateId = this.value;
+    });
+
+    document.getElementById('emailjs-public-key').addEventListener('change', function() {
+        emailjsConfig.publicKey = this.value;
+    });
 
     // Send button event
     document.getElementById('send-btn').addEventListener('click', sendNewsletter);
@@ -184,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
 async function sendNewsletter() {
     // Validate EmailJS configuration
     if (!emailjsConfig.serviceId || !emailjsConfig.templateId || !emailjsConfig.publicKey) {
-        alert('EmailJS credentials are not configured on the server. Please contact the administrator.');
+        alert('Please configure your EmailJS settings first!');
         return;
     }
 

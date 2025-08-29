@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'newsletter',  # Our custom app
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
